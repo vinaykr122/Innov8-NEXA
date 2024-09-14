@@ -3,16 +3,16 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const User = require('./models/User'); // Make sure this path is correct
+const User = require('./models/User'); // Ensure this is the correct path to your User model
 
 const app = express();
-const port = 5000; // Make sure this port matches the one in your frontend
+const port = 5000;
 
 app.use(cors());
-app.use(bodyParser.json()); // For parsing application/json
+app.use(bodyParser.json());
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/mydb', { // Update with your MongoDB connection string
+mongoose.connect('mongodb://localhost:27017/mydb', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
@@ -29,10 +29,8 @@ app.post('/register', async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
-
     res.status(201).send({ message: 'User created successfully' });
   } catch (error) {
     if (error.code === 11000) {
@@ -40,6 +38,32 @@ app.post('/register', async (req, res) => {
     }
     console.error('Error creating user:', error);
     res.status(500).send({ message: 'Error creating user', error });
+  }
+});
+
+// Sign-in endpoint
+app.post('/signin', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).send({ message: 'Email and password are required' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).send({ message: 'Invalid email or password' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).send({ message: 'Invalid email or password' });
+    }
+
+    res.status(200).send({ message: 'Sign-in successful!' });
+  } catch (error) {
+    console.error('Error signing in:', error);
+    res.status(500).send({ message: 'Error signing in', error });
   }
 });
 

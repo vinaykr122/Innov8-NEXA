@@ -40,7 +40,10 @@ const ChatbotPage = () => {
       <h1 className="text-2xl font-bold mb-6">Chatbot Page</h1>
       <div id="chatbot-container" style={{ width: '100%', height: '500px' }}></div>
     </div>
+    
   );
 };
 
 export default ChatbotPage;
+
+
